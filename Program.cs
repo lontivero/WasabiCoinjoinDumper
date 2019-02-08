@@ -16,8 +16,12 @@ namespace WasabiRealFeeCalc
             var builder = new TransactionProviderBuilder();
             await builder.BuildAsync();
 
-            var crawlerService = new TransactionCrawler(builder.TransactionProvider, builder.TransactionRepository);
+            var csv = new CsvUpdater("WasabiCoinjoins.csv");
+            var watcher = new DataDirectoryWatcher(builder.TransactionRepository, builder.TransactionMetadataRepository, csv.Inbox);
+            var crawlerService = new TransactionCrawler(builder.TransactionProvider, builder.TransactionRepository, builder.TransactionMetadataRepository);
+            csv.Start();
             crawlerService.Start();
+            watcher.Start();
 
             var i = 0;
             while(i<10000)

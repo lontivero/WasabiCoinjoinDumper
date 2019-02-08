@@ -3,7 +3,7 @@ using NBitcoin;
 
 namespace WasabiRealFeeCalc
 {
-    static class TransactionExtensions
+    public static class TransactionExtensions
     {
         public static bool IsWasabiCoinJoin(this Transaction tx)
         {

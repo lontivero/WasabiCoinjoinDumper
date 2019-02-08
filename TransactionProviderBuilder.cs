@@ -7,6 +7,7 @@ namespace WasabiRealFeeCalc
     internal class TransactionProviderBuilder
     {
         public Repository<Transaction> TransactionRepository { get; private set; }
+        public Repository<TransactionMetadata> TransactionMetadataRepository  { get; private set; }
         public ITransactionProvider TransactionProvider { get; private set; }
         public IBlockProvider BlockProvider { get; private set; }
 
@@ -32,6 +33,9 @@ namespace WasabiRealFeeCalc
             var blocksPersistenceCachedProvider = new CachedBlockProvider(dataProvider, blocksPersistentCache);
 
             BlockProvider = blocksPersistenceCachedProvider;
+
+            TransactionMetadataRepository = new Repository<TransactionMetadata>(new TransactionMetadataSerializer());
+
         }
     }
 }
