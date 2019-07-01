@@ -27,12 +27,14 @@ namespace WasabiRealFeeCalc
             if( nroInputs < 20)   return false;
             if( nroOutputs < 24)  return false;
             if( nroOutputs < 24)  return false;
+/* 
             if( equalAmountOutputs < (nroInputs * 0.8)) return false;
             if( mixingLevels.Length > 1 && (mixingLevels[1].Denomination != (2 * mixingLevels[0].Denomination)))
             {
                 if(!payToWasabi)
                     return false;
             } 
+*/
             return true;
         }
     }

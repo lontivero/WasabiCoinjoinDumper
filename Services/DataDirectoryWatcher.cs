@@ -12,13 +12,13 @@ namespace WasabiRealFeeCalc
 {
     class DataDirectoryWatcher : ServiceBase
     {
-        private readonly Channel<RawData> _processor;
+        private readonly Channel<RawData[]> _processor;
         private readonly Repository<Transaction> _transactionRepository;
         private readonly Repository<TransactionMetadata> _transactionMetadataRepository;
 
         private IEnumerable<uint256> _lastTransactionFiles = Enumerable.Empty<uint256>();
 
-        public DataDirectoryWatcher(Repository<Transaction> transactionRepository, Repository<TransactionMetadata> transactionMetadataRepository, Channel<RawData> processor)
+        public DataDirectoryWatcher(Repository<Transaction> transactionRepository, Repository<TransactionMetadata> transactionMetadataRepository, Channel<RawData[]> processor)
         {
             _processor = processor;
             _transactionRepository = transactionRepository;
@@ -48,27 +48,29 @@ namespace WasabiRealFeeCalc
             var meta = await _transactionMetadataRepository.GetAsync(txId);
 
             var i = 0;
+            var arr = new RawData[tx.Outputs.Count()];
             foreach(var output in tx.Outputs)
             {
                 try{
-                var rawData = new RawData {
-                    BlockNumber = meta.BlockNumber.ToString(),
-                    Time = meta.Time.ToUniversalTime().ToString(),
-                    FirstTimeSeen = meta.FirstTimeSeen.ToUniversalTime().ToString(),
-                    TransactionId = meta.TransactionId.ToString(),
-                    Size = meta.Size.ToString(),
-                    VirtualSize = meta.VirtualSize.ToString(),
-                    Index = (i++).ToString(),
-                    Value = output.Value.ToString(),    
-                    Address = output.ScriptPubKey.GetDestinationAddress(Network.Main).ToString()
-                };
-                _processor.Send(rawData);
+                    var rawData = new RawData {
+                        BlockNumber = meta.BlockNumber.ToString(),
+                        Time = meta.Time.ToUniversalTime().ToString(),
+                        FirstTimeSeen = meta.FirstTimeSeen.ToUniversalTime().ToString(),
+                        TransactionId = meta.TransactionId.ToString(),
+                        Size = meta.Size.ToString(),
+                        VirtualSize = meta.VirtualSize.ToString(),
+                        Index = (i++).ToString(),
+                        Value = output.Value.ToString(),    
+                        Address = output.ScriptPubKey.GetDestinationAddress(Network.Main).ToString()
+                    };
+                arr[i-1] = rawData;
                 }
                 catch(Exception e)
                 {
                     Console.WriteLine(e);
                 }
             }
+            _processor.Send(arr);
         }
     }
 }

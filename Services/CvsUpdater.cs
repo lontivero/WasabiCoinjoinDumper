@@ -9,10 +9,11 @@ namespace WasabiRealFeeCalc
 {
     internal class CsvUpdater : ServiceBase
     {
-        public Channel<RawData> Inbox { get; } = new Channel<RawData>();
+        public Channel<RawData[]> Inbox { get; } = new Channel<RawData[]>();
 
         private string _fileName;
         private bool _initialized = false;
+
         private IDictionary<RawData,bool> _cache = new Dictionary<RawData,bool>(); 
 
         public CsvUpdater(string fileName)
@@ -25,10 +26,21 @@ namespace WasabiRealFeeCalc
             await EnsureCsvFileExistsAsync();
             var rawData = await Inbox.TakeAsync();
 
-            if(_cache.ContainsKey(rawData)) return;
+            if(_cache.ContainsKey(rawData[0])) return;
 
-            _cache.Add(rawData, true);
-            await File.AppendAllLinesAsync(_fileName,  new[]{rawData.ToString()});
+            while(File.Exists(".lock")) 
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
+            
+            try
+            {
+                File.Create(".lock");
+                _cache.Add(rawData[0], true);
+                await File.AppendAllLinesAsync(_fileName,  rawData.Select(x=>x.ToString()).ToArray());
+            }
+            finally
+            {
+                File.Delete(".lock");
+            }
         }
 
         private async Task EnsureCsvFileExistsAsync()
