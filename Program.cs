@@ -25,7 +25,7 @@ namespace WasabiRealFeeCalc
                     {
                         json = await client.GetAddressTransactionsAsync(Constants.CoordinatorAddress);
                     }
-                    catch(HttpRequestException)
+                    catch(Exception)
                     {
                         await Task.Delay(2000);
                     }
